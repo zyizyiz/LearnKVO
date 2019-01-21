@@ -23,6 +23,8 @@
  2.A面设置接收通知的事件
  3.3.A面移除通知中心
  4.C面建立通知中心，发送通知
+ 
+ KVC会触发KVO
  */
 #import "ViewController.h"
 #import "People.h"
