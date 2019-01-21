@@ -25,6 +25,8 @@
  4.C面建立通知中心，发送通知
  
  KVC会触发KVO
+ setValue:forKey:  先找setKey:、_setKey: 方法，没找到的话，查看accessInstanceVariablesDirectly方法的返回值（默认为True），为True的话按照_key、_isKey、key、isKey的顺序查找成员变量，最终没找到的话报NSUnknownKeyException
+ valueForKey:  先找getKey、key、isKey、_key方法，没找到的话，查看accessInstanceVariablesDirectly方法的返回值，为True的话按照_key、_isKey、key、isKey的顺序查找成员变量，最终没找到的话报NSUnKnownKeyException
  */
 #import "ViewController.h"
 #import "People.h"
