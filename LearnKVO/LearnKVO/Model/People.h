@@ -11,6 +11,7 @@
 @interface People : NSObject
 
 // 名字
-@property(nonatomic,copy)NSString *name;
+@property(nonatomic,copy,setter=setRealName:)NSString *name;
+
 
 @end

@@ -8,6 +8,18 @@
 
 #import "People.h"
 
+@interface People()
+
+// 年龄
+@property(nonatomic,copy)NSString *age;
+@end
+
 @implementation People
+
+- (void)setRealName:(NSString *)name {
+    _name = name;
+    NSLog(@"xxx");
+}
+
 
 @end

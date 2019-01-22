@@ -31,6 +31,7 @@
 #import "ViewController.h"
 #import "People.h"
 #import "SecondViewController.h"
+#import <objc/runtime.h>
 
 @interface ViewController ()
 
@@ -51,6 +52,19 @@
     _man = [[People alloc]init];
     // 1.注册观察者
     [_man addObserver:self forKeyPath:@"name" options:(NSKeyValueObservingOptionNew) context:nil];
+    
+    NSLog(@"%s",object_getClassName(_man));
+    
+    // 因为NSKVONotifying_People类重写了class对象，所以调用class方法是会反悔People类
+//    [self getClassMethod:[_man class]];
+    // 获得真正的NSKVONotifying类
+    [self getClassMethod:object_getClass(_man)];
+    
+    // KVC
+    [_man setValue:@"Eve" forKey:@"name"];
+    // 获取实例变量列表
+    [self getIvarsForClass:[People class]];
+    [self getIvarsForClass:object_getClass(_man)];
     
     _btn = [[UIButton alloc]initWithFrame:CGRectMake(100, 100, 100, 100)];
     [_btn setTitle:@"点击" forState:UIControlStateNormal];
@@ -73,6 +87,39 @@
     [self.navigationController pushViewController:vc animated:true];
 }
 
+// 获取方法（类方法，实例方法）
+- (void)getClassMethod: (Class _Nullable)cls
+{
+    unsigned int outCount;
+    Method *methods = class_copyMethodList(cls, &outCount);
+    NSMutableString *mutString = [[NSMutableString alloc]init];
+    for (int i = 0; i < outCount; i++) {
+        Method method = methods[i];
+        NSString *methodName = NSStringFromSelector(method_getName(method));
+        [mutString appendString:methodName];
+        [mutString appendString:@", "];
+    }
+    NSLog(@"%@: %@",NSStringFromClass(cls),mutString);
+    free(methods);
+}
+
+// 获取实例变量
+- (void)getIvarsForClass: (Class _Nullable)cls
+{
+    unsigned int outCount;
+    Ivar *ivars = class_copyIvarList(cls, &outCount);
+    NSMutableString *mutString = [[NSMutableString alloc]init];
+    for (int i = 0; i < outCount; i++) {
+        Ivar ivar = ivars[i];
+        NSString *ivarName = [NSString stringWithCString:ivar_getName(ivar) encoding:(NSUTF8StringEncoding)];
+        [mutString appendString:ivarName];
+        [mutString appendString:@", "];
+        
+    }
+    NSLog(@"%@ ivars: %@",NSStringFromClass(cls),mutString);
+    free(ivars);
+}
+
 // 2.A面设置接收通知的事件
 -(void)receiveNotification:(NSNotification *)notifi {
     NSLog(@"%@ --- %@ --- %@",notifi.object,notifi.userInfo,notifi.name);
@@ -86,9 +133,6 @@
 -(void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context {
     if ([keyPath isEqual: @"name"]) {
         NSLog(@"man's name is %@",change[NSKeyValueChangeNewKey]);
-    }
-    if ([keyPath isEqualToString:@"onClick"]) {
-        NSLog(@"click btn");
     }
 }
 
